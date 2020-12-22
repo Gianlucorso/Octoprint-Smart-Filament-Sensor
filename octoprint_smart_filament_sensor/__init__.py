@@ -106,10 +106,10 @@ class SmartFilamentSensor( octoprint.plugin.StartupPlugin,
                 self._logger.info("Smart Filament Sensor has been started")
             else: #set
                 self.sensor_tmtrig_thread.set()
-                self.sent_code = False;
+                self.code_sent = False;
                 self._logger.info("Smart Filament Sensor has been restarted")
 
-        self.sent_code = False
+        self.code_sent = False
 
     def sensor_pause(self):
         if(self.sensor_enabled and self.sensor_tmtrig_thread != None):
@@ -120,11 +120,11 @@ class SmartFilamentSensor( octoprint.plugin.StartupPlugin,
     # Send configured pause command to the printer to interrupt the print
     def printer_change_filament (self):
         # Check if stop signal was already sent
-        if(not self.sent_code):
+        if (not self.code_sent):
             self._logger.debug("Smart Filament Sensor has detected no movement")
             self._logger.info("Send PAUSE command: " + self.pause_command)
             self._printer.commands(self.pause_command)
-            self.sent_code = True
+            self.code_sent = True
 
 # Events
     def on_event(self, event, payload):
