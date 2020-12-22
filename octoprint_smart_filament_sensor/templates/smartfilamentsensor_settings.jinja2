@@ -1,0 +1,55 @@
+<h4>{{ _('Smart Filament Sensor') }}</h4>
+<form class="form-horizontal">
+<!-- General -->
+    <h6>{{ _('General') }}</h6>
+    <div class="control-group">
+        <label class="control-label">{{ _('Board Pin Mode:') }}</label>
+        <div class="controls" data-toggle="tooltip" title="{{ _('RPi pins numbered in Board mode or BCM mode?') }}">
+            <select class="select-mini" data-bind="value: settings.plugins.smartfilamentsensor.mode">
+                <option value=0>{{ _('Board Mode') }}</option>
+                <option value=1>{{ _('BCM Mode') }}</option>
+            </select>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">{{ _('Pause command:') }}</label>
+        <div class="controls" data-toggle="tooltip" title="{{ _('The pause command that is sent to the printer when the timeout threshold expires') }}">
+            <select class="select-mini" data-bind="value: settings.plugins.smartfilamentsensor.pause_command">
+                <option value="M0">{{ _('M0 - Stop') }}</option>
+                <option value="M1">{{ _('M1 - Sleep') }}</option>
+                <option value="M25">{{ _('M25 - Pause SD Print') }}</option>
+                <option value="M226">{{ _('M226 - G-Code Pause') }}</option>
+                <option value="M600">{{ _('M600 - Filament Change') }}</option>
+                <option value="M601">{{ _('M601 - Pause print') }}</option>
+            </select>
+            <span class="help-block"><small>Before selecting a pause command check if your firmware supports it!</small></span>
+        </div>
+    </div>
+    <!-- GPIO pin on the raspberry -->
+    <div class="control-group">
+        <label class="control-label">{{ _('Smart Filament Sensor GPIO Pin:') }}</label>
+        <div class="controls" data-toggle="tooltip" title="{{ _('Which Raspberry Pi GPIO pin your switch is attached to') }}">
+            <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settings.plugins.smartfilamentsensor.sensor_pin">
+        </div>
+    </div>
+    <!-- Enable / Disable detection -->
+    <div class="control-group">
+        <div class="controls" data-toggle="tooltip" title="{{ _('Enable or disable the sensor usage.') }}">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.plugins.smartfilamentsensor.sensor_enabled"> {{ _('Enable Smart Filament Sensor') }}
+            </label>
+        </div>
+    </div>
+    <!-- Timeout detection -->
+    <h6>{{ _('Timeout detection') }}</h6>
+    <div class="control-group">
+        <label class="control-label">{{ _('Time Threshold:') }}</label>
+        <div class="controls">
+            <div class="input-append" data-toggle="tooltip" title="{{ _('When no movement is detected by the Smart Filament Sensor for the amount of time specified by this threshold, the pause command is sent to the printer.') }}">
+                <input type="number" step="any" min="0" class="input-mini text-right" data-bind="value: settings.plugins.smartfilamentsensor.sensor_timeout_threshold">
+                <span class="add-on">sec</span>
+            </div>
+            <span class="help-block"><small>Don't choose the timeout value too small. During long slow movements, it takes some time until the sensor changes the value.</small></span>
+        </div>
+    </div>
+</form>
