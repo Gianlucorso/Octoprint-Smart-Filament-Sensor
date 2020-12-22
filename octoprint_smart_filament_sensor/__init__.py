@@ -6,9 +6,9 @@ import RPi.GPIO as GPIO
 from time import sleep
 from flask import jsonify
 import json
-from octoprint_smart_filament_sensor.TimeTrigger import TimeTrigger
+from octoprint_smart_filament_sensor.time_trigger import TimeTrigger
 
-class SmarFilamentSensor( octoprint.plugin.StartupPlugin,
+class SmartFilamentSensor( octoprint.plugin.StartupPlugin,
                           octoprint.plugin.EventHandlerPlugin,
                           octoprint.plugin.TemplatePlugin,
                           octoprint.plugin.SettingsPlugin ):
@@ -36,12 +36,13 @@ class SmarFilamentSensor( octoprint.plugin.StartupPlugin,
         return int(self._settings.get(["sensor_pin"]))
 
     @property
+    def sensor_enabled(self):
+        return self._settings.get_boolean(["sensor_enabled"])
+
+    @property
     def sensor_timeout_threshold(self):
         return int(self._settings.get(["sensor_timeout_threshold"]))
 
-    @property
-    def sensor_enabled(self):
-        return self._settings.get_boolean(["sensor_enabled"])
 
 # Initialization methods
     def _setup_sensor(self):
@@ -67,10 +68,10 @@ class SmarFilamentSensor( octoprint.plugin.StartupPlugin,
         return dict(
             mode = 0, #Board Mode
             pause_command = "M600", #Command sent after timeout threshold
-            sensor_pin = -1, #Default pin is none
-            sensor_timeout_threshold = 45, #Maximum time which, after no filament motion, the pause is triggered
+            sensor_pin = 0, #Default pin is none
             sensor_enabled = True, #Sensor detection is enabled by default
-        )
+            sensor_timeout_threshold = 45 #Maximum time which, after no filament motion, the pause is triggered
+            )
 
     def on_settings_save(self, data):
         octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
@@ -183,7 +184,7 @@ def __plugin_load__():
 
     global __plugin_hooks__
     __plugin_hooks__ = {
-        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
+        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
     }
 
 
