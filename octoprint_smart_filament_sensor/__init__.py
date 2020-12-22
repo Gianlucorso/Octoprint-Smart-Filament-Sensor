@@ -138,7 +138,7 @@ class SmartFilamentSensor( octoprint.plugin.StartupPlugin,
                 self._logger.info("%s: Starting Smart Filament Sensor." % (event))
             else
                 self._logger.inf("%s: Restarting Smart Filament Sensor." % (event))
-            sensor_start() #starting or restarting
+            self.sensor_start() #starting or restarting
 
         # Disable sensor
         elif event in (

@@ -29,7 +29,7 @@ class TimeTrigger(THREADING.Thread):
         if not self._started: #first time run method is called is by start method
             self._logger.debug("Time Trigger: start")
             self._started = True #thread has been started at least once (from official doc: if started more than once, then runtime error)
-            set() #set trigger
+            self.set() #set trigger
 
         while self._running:
             elapsed_time = (TIME.time() - self._start_time)
