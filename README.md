@@ -2,8 +2,9 @@
 
 [OctoPrint](http://octoprint.org/) plugin that lets integrate `Smart Filament Sensors` like `BigTreeTechs SmartFilamentSensor` directly to `RaspberryPi GPIO` pins. This enables that this sensor can also be used on 3D Printers, that do not have a `E0-Stop` like e.g. `Creality 1.1.4` Mainboard of `Ender 3`.
 
-This work has been based on the work of [maocypher](https://github.com/maocypher) available at the `GitHub` repository [Octoprint-Smart-Filament-Sensor](https://github.com/maocypher/Octoprint-Smart-Filament-Sensor (see his repository for more details).
-Also this `README` file has been filled with parts of his file.
+> **NB:**
+> This work has been based on the work of [maocypher](https://github.com/maocypher) available at the `GitHub` repository [Octoprint-Smart-Filament-Sensor](https://github.com/maocypher/Octoprint-Smart-Filament-Sensor) (see his repository for more details).
+> Also this `README` file has been filled with parts of his file.
 
 ## Required sensor
 
@@ -44,7 +45,7 @@ There are also alternative pausing commands, like `M0, M1, M25, M226, M600, M601
 
 ## GCode
 ### Start GCode
-Since the sensor is activated with the first G0 or G1 command it is adviced to perform these commands after complete heatup of the printer.
+Since the sensor is activated with the first G0 or G1 command it is suggested to perform these commands after completing the heat-up of the printer.
 
 E.g.
 ```
