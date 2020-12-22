@@ -159,7 +159,7 @@ class SmartFilamentSensor( octoprint.plugin.StartupPlugin,
 # Plugin update methods
     def get_update_information(self):
         return dict(
-            modsmartfilamentsensor=dict(
+            smartfilamentsensor=dict(
                 displayName="Smart Filament Sensor",
                 displayVersion=self._plugin_version,
 
