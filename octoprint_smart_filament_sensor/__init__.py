@@ -8,10 +8,10 @@ from flask import jsonify
 import json
 from octoprint_smart_filament_sensor.time_trigger import TimeTrigger
 
-class SmartFilamentSensor( octoprint.plugin.StartupPlugin,
+class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                           octoprint.plugin.EventHandlerPlugin,
                           octoprint.plugin.TemplatePlugin,
-                          octoprint.plugin.SettingsPlugin ):
+                          octoprint.plugin.SettingsPlugin):
 
     def initialize(self):
         self._logger.info("Running RPi.GPIO version '{0}'".format(GPIO.VERSION))
@@ -112,7 +112,7 @@ class SmartFilamentSensor( octoprint.plugin.StartupPlugin,
         self.code_sent = False
 
     def sensor_pause(self):
-        if(self.sensor_enabled and self.sensor_tmtrig_thread != None):
+        if (self.sensor_enabled and self.sensor_tmtrig_thread != None):
             self.sensor_tmtrig_thread.release()
             self._logger.info("Smart Filament Sensor has been paused")
 
@@ -137,7 +137,7 @@ class SmartFilamentSensor( octoprint.plugin.StartupPlugin,
             if self.sensor_tmtrig_thread == None
                 self._logger.info("%s: Starting Smart Filament Sensor." % (event))
             else
-                self._logger.inf("%s: Restarting Smart Filament Sensor." % (event))
+                self._logger.info("%s: Restarting Smart Filament Sensor." % (event))
             self.sensor_start() #starting or restarting
 
         # Disable sensor
@@ -159,18 +159,18 @@ class SmartFilamentSensor( octoprint.plugin.StartupPlugin,
 # Plugin update methods
     def get_update_information(self):
         return dict(
-            smartfilamentsensor=dict(
-                displayName="Smart Filament Sensor",
-                displayVersion=self._plugin_version,
+            smartfilamentsensor = dict(
+                displayName = "Smart Filament Sensor",
+                displayVersion = self._plugin_version,
 
                 # version check: github repository
-                type="github_release",
-                user="Gianlucorso",
-                repo="Octoprint-Smart-Filament-Sensor",
-                current=self._plugin_version,
+                type = "github_release",
+                user = "Gianlucorso",
+                repo = "Octoprint-Smart-Filament-Sensor",
+                current = self._plugin_version,
 
                 # update method: pip
-                pip="https://github.com/Gianlucorso/Octoprint-Smart-Filament-Sensor/archive/master.zip"
+                pip = "https://github.com/Gianlucorso/Octoprint-Smart-Filament-Sensor/archive/master.zip"
             )
         )
 

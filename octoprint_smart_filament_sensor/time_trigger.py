@@ -6,8 +6,9 @@ class TimeTrigger(THREADING.Thread):
 
     _pin = -1
     _running = False
+    _started = False
     _start_time = 0
-    time_threshold = -1
+    time_threshold = 0
 
     # Initialize FilamentMotionSensor
     def __init__(self, threadID, threadName, pPin, pTimeThreshold, pLogger, pCallback=None):
