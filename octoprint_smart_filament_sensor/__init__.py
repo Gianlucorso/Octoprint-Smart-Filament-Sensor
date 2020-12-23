@@ -106,7 +106,6 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                 self._logger.info("Smart Filament Sensor has been started")
             else: #set
                 self.sensor_tmtrig_thread.set()
-                self.code_sent = False;
                 self._logger.info("Smart Filament Sensor has been restarted")
 
         self.code_sent = False
@@ -134,9 +133,9 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             Events.PRINT_RESUMED,
             Events.Z_CHANGE
         ):
-            if self.sensor_tmtrig_thread == None
+            if self.sensor_tmtrig_thread == None:
                 self._logger.info("%s: Starting Smart Filament Sensor." % (event))
-            else
+            else:
                 self._logger.info("%s: Restarting Smart Filament Sensor." % (event))
             self.sensor_start() #starting or restarting
 
@@ -149,7 +148,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         ):
             self._logger.info("%s: Pausing and disabling Smart Filament Sensor." % (event))
             self.sensor_pause() #pausing
-            self.sensor_enabled = False; #disabling
+            self.sensor_enabled = False #disabling
 
         # Disable motion sensor if paused
         elif event is Events.PRINT_PAUSED:
