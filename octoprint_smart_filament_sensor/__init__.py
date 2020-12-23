@@ -55,14 +55,14 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             GPIO.setmode(GPIO.BCM)
 
         GPIO.setup(self.sensor_pin, GPIO.IN)
-        GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self.printerIsInit) #used to avoid triggering the smart filament sensor before printer has actually started printing
+        GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self._init_printer) #used to avoid triggering the smart filament sensor before printer has actually started printing
 
         if self.sensor_enabled == False:
             self._logger.info("Smart Filament Sensor has been disabled")
 
         self.sensor_tmtrig_thread = None
 
-    def printerIsInit(self):
+    def _init_printer(self, pPin):
         self.printer_init = True
         self._logger.debug("Printer is initialized")
         GPIO.remove_event_detect(self.sensor_pin) #no need to keep monitoring this pin
