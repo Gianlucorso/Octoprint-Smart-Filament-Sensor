@@ -62,7 +62,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
         self.sensor_tmtrig_thread = None
 
-    def printerIsInit:
+    def printerIsInit(self):
         self.printer_init = True
         self._logger.debug("Printer is initialized")
         GPIO.remove_event_detect(self.sensor_pin) #no need to keep monitoring this pin
