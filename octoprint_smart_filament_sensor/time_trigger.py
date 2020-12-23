@@ -32,11 +32,12 @@ class TimeTrigger(THREADING.Thread):
             self._started = True #thread has been started at least once (from official doc: if started more than once, then runtime error)
             self.set() #set trigger
 
-        while self._running:
-            elapsed_time = (TIME.time() - self._start_time)
+        while self._started:
+            if self._running:
+                elapsed_time = (TIME.time() - self._start_time)
 
-            if (elapsed_time >= self.time_threshold):
-                self.fire()
+                if (elapsed_time > self.time_threshold):
+                    self.fire()
 
             TIME.sleep(0.250)
         #GPIO.remove_event_detect(self.used_pin)
@@ -53,10 +54,11 @@ class TimeTrigger(THREADING.Thread):
         self._logger.debug("Time Trigger: release")
 
     def set(self):
-        self._running = True
-        GPIO.remove_event_detect(self._pin)
-        GPIO.add_event_detect(self._pin, GPIO.BOTH, callback=self._reset)
-        self._logger.debug("Time Trigger: set")
+        if not self._running:
+            self._running = True
+            GPIO.remove_event_detect(self._pin)
+            GPIO.add_event_detect(self._pin, GPIO.BOTH, callback=self._reset)
+            self._logger.debug("Time Trigger: set")
 
     def isRunning(self):
         return self._running
