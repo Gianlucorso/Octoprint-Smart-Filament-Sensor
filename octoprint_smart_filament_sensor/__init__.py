@@ -20,7 +20,8 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         GPIO.setwarnings(False)        # Disable GPIO warnings
 
         self.code_sent = False
-        self.printer_isPrinting = False
+        self.count = 0 #ignored GPIO (raising or falling) edges
+        self.count_threshold = 2 #number of GPIO (raising or falling) edges to be ignored
 
 #Properties
 
@@ -55,17 +56,11 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             GPIO.setmode(GPIO.BCM)
 
         GPIO.setup(self.sensor_pin, GPIO.IN)
-        #GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self._printer_isPrinting) #used to avoid triggering the smart filament sensor before printer has actually started printing
 
         if self.sensor_enabled == False:
             self._logger.info("Smart Filament Sensor has been disabled")
 
         self.sensor_tmtrig_thread = None
-
-    def _printer_isPrinting(self):
-        self.printer_isPrinting = True
-        self._logger.debug("Printer is initialized")
-        #GPIO.remove_event_detect(self.sensor_pin) #no need to keep monitoring this pin
 
     def on_after_startup(self):
         self._logger.info("Smart Filament Sensor started (on startup)")
@@ -87,6 +82,20 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
     def get_template_configs(self):
         return [dict(type="settings", custom_bindings=False)]
 
+    def _printer_isPrinting(self):
+        GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self._count) #used to avoid triggering the smart filament sensor before printer has actually started printing
+        self._logger.info("Enabling initial counter")
+        #GPIO.remove_event_detect(self.sensor_pin) #no need to keep monitoring this pin
+
+    def _count(self, pPin):
+        self.count += 1
+        if self.count < self.count_threshold:
+            self._logger.info("Ignored %d GPIO edge(s)", self.count)
+        else:
+            self._logger.info("Exceeding counting threshold: ignored %d GPIO edge(s)", self.count_threshold)
+            self.sensor_start()
+            GPIO.remove_event_detect(pPin, GPIO.BOTH)
+
 # Sensor methods
     def sensor_start(self):
         self._logger.debug("Smart Filament Sensor enabled: " + str(self.sensor_enabled))
@@ -100,9 +109,9 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
             self._logger.debug("GPIO pin: " + str(self.sensor_pin))
 
-            if self.sensor_tmtrig_thread == None: #start
-                self._logger.debug("Timeout Threshold: " + str(self.sensor_timeout_threshold))
+            self._logger.debug("Timeout Threshold: " + str(self.sensor_timeout_threshold))
 
+            if self.sensor_tmtrig_thread == None:
                 # Start Timeout_Detection thread
                 self.sensor_tmtrig_thread = TimeTrigger(
                     1, "TimeTriggerThread", self.sensor_pin,
@@ -111,11 +120,14 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
                     pCallback=self.printer_change_filament)
                 self.sensor_tmtrig_thread.start()
                 self._logger.info("Smart Filament Sensor has been started")
-            else: #set
-                self.sensor_tmtrig_thread.set()
-                self._logger.info("Smart Filament Sensor has been restarted")
 
         self.code_sent = False
+
+    def sensor_reset(self):
+        if self.sensor_tmtrig_thread != None: #i.e. sensor_start has been already called
+            self.sensor_tmtrig_thread.set()
+            self.code_sent = False
+            self._logger.info("Smart Filament Sensor has been restarted")
 
     def sensor_pause(self):
         if (self.sensor_enabled and self.sensor_tmtrig_thread != None):
@@ -137,20 +149,20 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
         if event is Events.PRINTER_STATE_CHANGED:
             if payload[u'state_string'] == 'Printing':
+                self._logger.info("%s: Printer has started printing" % (event))
                 self._printer_isPrinting()
-                self._logger.debug("Printer has started printing")
 
         elif event in (
             Events.PRINT_STARTED,
             Events.PRINT_RESUMED,
             Events.Z_CHANGE
         ):
-            if self.printer_isPrinting:
-                if self.sensor_tmtrig_thread == None:
-                    self._logger.info("%s: Starting Smart Filament Sensor." % (event))
-                else:
-                    self._logger.info("%s: Restarting Smart Filament Sensor." % (event))
-                self.sensor_start() #starting or restarting
+
+            if self.sensor_tmtrig_thread == None:
+                self._logger.info("No need to reset Smart Filament Sensor: it has not been started yet")
+            else:
+                self.sensor_reset() #starting or restarting
+                self._logger.info("%s: Resetting Smart Filament Sensor" % (event))
 
         # Disable sensor
         elif event in (
@@ -159,13 +171,13 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             Events.PRINT_CANCELLED,
             Events.ERROR
         ):
-            self._logger.info("%s: Pausing and disabling Smart Filament Sensor." % (event))
+            self._logger.info("%s: Pausing and disabling Smart Filament Sensor" % (event))
             self.sensor_pause() #pausing
             self.sensor_enabled = False #disabling
 
         # Disable motion sensor if paused
         elif event is Events.PRINT_PAUSED:
-            self._logger.info("%s: Pausing Smart Filament Sensor." % (event))
+            self._logger.info("%s: Pausing Smart Filament Sensor" % (event))
             self.sensor_pause() #pausing
 
 # Plugin update methods
