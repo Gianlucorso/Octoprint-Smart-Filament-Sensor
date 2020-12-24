@@ -20,7 +20,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         GPIO.setwarnings(False)        # Disable GPIO warnings
 
         self.code_sent = False
-        self.printer_init = False
+        self.printer_isPrinting = False
 
 #Properties
 
@@ -55,17 +55,17 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             GPIO.setmode(GPIO.BCM)
 
         GPIO.setup(self.sensor_pin, GPIO.IN)
-        GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self._init_printer) #used to avoid triggering the smart filament sensor before printer has actually started printing
+        #GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self._printer_isPrinting) #used to avoid triggering the smart filament sensor before printer has actually started printing
 
         if self.sensor_enabled == False:
             self._logger.info("Smart Filament Sensor has been disabled")
 
         self.sensor_tmtrig_thread = None
 
-    def _init_printer(self, pPin):
-        self.printer_init = True
+    def _printer_isPrinting(self):
+        self.printer_isPrinting = True
         self._logger.debug("Printer is initialized")
-        GPIO.remove_event_detect(self.sensor_pin) #no need to keep monitoring this pin
+        #GPIO.remove_event_detect(self.sensor_pin) #no need to keep monitoring this pin
 
     def on_after_startup(self):
         self._logger.info("Smart Filament Sensor started (on startup)")
@@ -135,12 +135,16 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 # Events
     def on_event(self, event, payload):
 
-        if event in (
+        if event is Events.PRINTER_STATE_CHANGED:
+            if payload[u'state_id'] is 'PRINTING':
+                self._printer_isPrinting()
+
+        elif event in (
             Events.PRINT_STARTED,
             Events.PRINT_RESUMED,
             Events.Z_CHANGE
         ):
-            if self.printer_init:
+            if self.printer_isPrinting:
                 if self.sensor_tmtrig_thread == None:
                     self._logger.info("%s: Starting Smart Filament Sensor." % (event))
                 else:
