@@ -136,8 +136,9 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
     def on_event(self, event, payload):
 
         if event is Events.PRINTER_STATE_CHANGED:
-            if payload[u'state_id'] is 'PRINTING':
+            if payload[u'state_string'] == 'Printing':
                 self._printer_isPrinting()
+                self._logger.debug("Printer has started printing")
 
         elif event in (
             Events.PRINT_STARTED,
