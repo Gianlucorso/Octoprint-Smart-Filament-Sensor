@@ -84,17 +84,17 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
     def _printer_isPrinting(self):
         GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self._count) #used to avoid triggering the smart filament sensor before printer has actually started printing
-        self._logger.info("Enabling initial counter")
+        self._logger.debug("Enabling initial counter")
         #GPIO.remove_event_detect(self.sensor_pin) #no need to keep monitoring this pin
 
     def _count(self, pPin):
         self.count += 1
         if self.count < self.count_threshold:
-            self._logger.info("Ignored %d GPIO edge(s)", self.count)
+            self._logger.debug("Ignored %d GPIO edge(s)", self.count)
         else:
-            self._logger.info("Exceeding counting threshold: ignored %d GPIO edge(s)", self.count_threshold)
+            self._logger.debug("Exceeding counting threshold: ignored %d GPIO edge(s)", self.count_threshold)
+            GPIO.remove_event_detect(self.sensor_pin)
             self.sensor_start()
-            GPIO.remove_event_detect(pPin, GPIO.BOTH)
 
 # Sensor methods
     def sensor_start(self):
@@ -123,23 +123,23 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
         self.code_sent = False
 
-    def sensor_reset(self):
+    def sensor_restart(self):
         if self.sensor_tmtrig_thread != None: #i.e. sensor_start has been already called
-            self.sensor_tmtrig_thread.set()
+            self.sensor_tmtrig_thread.reset()
             self.code_sent = False
             self._logger.info("Smart Filament Sensor has been restarted")
 
     def sensor_pause(self):
-        if (self.sensor_enabled and self.sensor_tmtrig_thread != None):
+        if self.sensor_tmtrig_thread != None:
             self.sensor_tmtrig_thread.release()
-        self._logger.info("Smart Filament Sensor has been paused")
+            self._logger.info("Smart Filament Sensor has been paused")
 
 # Sensor callbacks
     # Send configured pause command to the printer to interrupt the print
     def printer_change_filament (self):
         # Check if stop signal was already sent
         if (not self.code_sent):
-            self._logger.debug("Smart Filament Sensor has detected no movement")
+            self._logger.info("Smart Filament Sensor has detected no movement")
             self._logger.info("Send PAUSE command: " + self.pause_command)
             self._printer.commands(self.pause_command)
             self.code_sent = True
@@ -149,7 +149,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
         if event is Events.PRINTER_STATE_CHANGED:
             if payload[u'state_string'] == 'Printing':
-                self._logger.info("%s: Printer has started printing" % (event))
+                self._logger.debug("%s: Printer has started printing" % (event))
                 self._printer_isPrinting()
 
         elif event in (
@@ -159,10 +159,10 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         ):
 
             if self.sensor_tmtrig_thread == None:
-                self._logger.info("No need to reset Smart Filament Sensor: it has not been started yet")
+                self._logger.debug("No need to reset Smart Filament Sensor: it has not been started yet")
             else:
-                self.sensor_reset() #starting or restarting
-                self._logger.info("%s: Resetting Smart Filament Sensor" % (event))
+                self.sensor_restart() #starting or restarting
+                self._logger.debug("%s: Resetting Smart Filament Sensor" % (event))
 
         # Disable sensor
         elif event in (

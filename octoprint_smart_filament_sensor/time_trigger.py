@@ -56,19 +56,20 @@ class TimeTrigger(THREADING.Thread):
     def set(self):
         if not self._running:
             self._running = True
-            GPIO.remove_event_detect(self._pin)
-            GPIO.add_event_detect(self._pin, GPIO.BOTH, callback=self._reset)
+            GPIO.remove_event_detect(self._pin) #remove any previous event on the monitored pin
+            GPIO.add_event_detect(self._pin, GPIO.BOTH, callback=self.reset)
             self._logger.debug("Time Trigger: set")
+
+    # Eventhandler for GPIO filament sensor signal
+    # The new state of the GPIO pin is read and determinated.
+    # It is checked if motion is detected and printed to the console.
+    def reset(self, pPin):
+        self.set() #set again trigger
+        self._start_time = TIME.time() #then reset internal time
+        self._logger.debug("Time Trigger: reset internal time at " + str(self._start_time))
 
     def isRunning(self):
         return self._running
 
     def hasStarted(self):
         return self._started
-
-    # Eventhandler for GPIO filament sensor signal
-    # The new state of the GPIO pin is read and determinated.
-    # It is checked if motion is detected and printed to the console.
-    def _reset(self, pPin):
-        self._start_time = TIME.time()
-        self._logger.debug("Time Trigger: reset at " + str(self._start_time))
