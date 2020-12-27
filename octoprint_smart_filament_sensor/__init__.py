@@ -58,7 +58,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         GPIO.setup(self.sensor_pin, GPIO.IN)
 
         if self.sensor_enabled == False:
-            self._logger.info("Smart Filament Sensor has been disabled")
+            self._logger.info("Smart Filament Sensor is disabled")
 
         self.sensor_tmtrig_thread = None
 
@@ -83,6 +83,8 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         return [dict(type="settings", custom_bindings=False)]
 
     def _printer_isPrinting(self):
+        self._setup_sensor()
+        GPIO.remove_event_detect(self.sensor_pin)
         GPIO.add_event_detect(self.sensor_pin, GPIO.BOTH, callback=self._count) #used to avoid triggering the smart filament sensor before printer has actually started printing
         self._logger.debug("Enabling initial counter")
         #GPIO.remove_event_detect(self.sensor_pin) #no need to keep monitoring this pin
@@ -98,7 +100,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
 # Sensor methods
     def sensor_start(self):
-        self._logger.debug("Smart Filament Sensor enabled: " + str(self.sensor_enabled))
+        self._logger.debug("Smart Filament Sensor enabling flag is: " + str(self.sensor_enabled))
 
         if self.sensor_enabled:
 
@@ -136,7 +138,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
 # Sensor callbacks
     # Send configured pause command to the printer to interrupt the print
-    def printer_change_filament (self):
+    def printer_change_filament(self):
         # Check if stop signal was already sent
         if (not self.code_sent):
             self._logger.info("Smart Filament Sensor has detected no movement")
@@ -157,12 +159,9 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             Events.PRINT_RESUMED,
             Events.Z_CHANGE
         ):
+            self._logger.info("%s: Resetting Smart Filament Sensor" % (event))
+            self.sensor_restart() #starting or restarting
 
-            if self.sensor_tmtrig_thread == None:
-                self._logger.debug("No need to reset Smart Filament Sensor: it has not been started yet")
-            else:
-                self.sensor_restart() #starting or restarting
-                self._logger.debug("%s: Resetting Smart Filament Sensor" % (event))
 
         # Disable sensor
         elif event in (

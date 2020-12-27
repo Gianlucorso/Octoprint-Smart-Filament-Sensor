@@ -54,7 +54,7 @@ class TimeTrigger(THREADING.Thread):
         self._logger.debug("Time Trigger: release")
 
     def set(self):
-        if not self._running:
+        if (not self._running):
             self._running = True
             GPIO.remove_event_detect(self._pin) #remove any previous event on the monitored pin
             GPIO.add_event_detect(self._pin, GPIO.BOTH, callback=self.reset)
@@ -64,6 +64,7 @@ class TimeTrigger(THREADING.Thread):
     # The new state of the GPIO pin is read and determinated.
     # It is checked if motion is detected and printed to the console.
     def reset(self, pPin):
+        self._running = False
         self.set() #set again trigger
         self._start_time = TIME.time() #then reset internal time
         self._logger.debug("Time Trigger: reset internal time at " + str(self._start_time))
