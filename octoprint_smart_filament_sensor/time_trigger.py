@@ -25,14 +25,17 @@ class TimeTrigger(THREADING.Thread):
         self._start_time = TIME.time()
         self.time_threshold = pTimeThreshold
 
+        self._logger.debug("Time Trigger: init done")
+
     # Override run method of threading
     def run(self):
-        if not self._started: #first time run method is called is by start method
-            self._logger.debug("Time Trigger: start")
+        if (not self._started): #first time run method is called is by start method
+            self._logger.debug("Time Trigger: starting")
             self._started = True #thread has been started at least once (from official doc: if started more than once, then runtime error)
-            self.set() #set trigger
+            self._set() #set trigger
 
         while self._started:
+
             if self._running:
                 elapsed_time = (TIME.time() - self._start_time)
 
@@ -42,32 +45,33 @@ class TimeTrigger(THREADING.Thread):
             TIME.sleep(0.250)
         #GPIO.remove_event_detect(self.used_pin)
 
+    def _set(self):
+        if (not self._running):
+            self._running = True
+            GPIO.remove_event_detect(self._pin) #remove any previous event on the monitored pin
+            GPIO.add_event_detect(self._pin, GPIO.BOTH, callback=self._reset_time)
+            self._logger.debug("Time Trigger: set done")
+
+    def _reset_time(self, pPin):
+        self._start_time = TIME.time() #reset internal time
+        self._logger.debug("Time Trigger: reset internal time at " + str(self._start_time))
+
     def fire(self):
         if(self.callback != None):
             self.callback()
-        self._logger.debug("Time Trigger: fire");
+        self._logger.debug("Time Trigger: fire done");
         self.release()
 
     def release(self):
         self._running = False
-        GPIO.remove_event_detect(self._pin)
-        self._logger.debug("Time Trigger: release")
+        GPIO.remove_event_detect(self._pin) #can be removed
+        self._logger.debug("Time Trigger: release done")
 
-    def set(self):
-        if (not self._running):
-            self._running = True
-            GPIO.remove_event_detect(self._pin) #remove any previous event on the monitored pin
-            GPIO.add_event_detect(self._pin, GPIO.BOTH, callback=self.reset)
-            self._logger.debug("Time Trigger: set")
-
-    # Eventhandler for GPIO filament sensor signal
-    # The new state of the GPIO pin is read and determinated.
-    # It is checked if motion is detected and printed to the console.
-    def reset(self, pPin):
-        self._running = False
-        self.set() #set again trigger
-        self._start_time = TIME.time() #then reset internal time
-        self._logger.debug("Time Trigger: reset internal time at " + str(self._start_time))
+    def reset(self):
+        self._running = False #thus set will work
+        self._set() #set again trigger
+        self._reset_time(self._pin) #reset internal time
+        self._logger.debug("Time Trigger: reset done")
 
     def isRunning(self):
         return self._running

@@ -48,6 +48,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
 # Initialization methods
     def _setup_sensor(self):
+        self._logger.info("Setting up Smart Filament Sensor")
         if(self.mode == 0):
             self._logger.info("Using Board Mode")
             GPIO.setmode(GPIO.BOARD)
@@ -61,9 +62,10 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             self._logger.info("Smart Filament Sensor is disabled")
 
         self.sensor_tmtrig_thread = None
+        self._logger.info("Smart Filament Sensor has been setted up")
 
     def on_after_startup(self):
-        self._logger.info("Smart Filament Sensor started (on startup)")
+        self._logger.debug("Startup")
         self._setup_sensor()
 
     def get_settings_defaults(self):
@@ -115,11 +117,13 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
             if self.sensor_tmtrig_thread == None:
                 # Start Timeout_Detection thread
+                self._logger.debug("Initializing Time Trigger")
                 self.sensor_tmtrig_thread = TimeTrigger(
                     1, "TimeTriggerThread", self.sensor_pin,
                     self.sensor_timeout_threshold,
                     self._logger,
                     pCallback=self.printer_change_filament)
+                self._logger.debug("Starting Time Trigger")
                 self.sensor_tmtrig_thread.start()
                 self._logger.info("Smart Filament Sensor has been started")
 
