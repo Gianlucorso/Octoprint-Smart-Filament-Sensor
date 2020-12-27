@@ -127,7 +127,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
     def sensor_restart(self):
         if self.sensor_tmtrig_thread != None: #i.e. sensor_start has been already called
-            self.sensor_tmtrig_thread.reset()
+            self.sensor_tmtrig_thread.set() #re-sets the time trigger
             self.code_sent = False
             self._logger.info("Smart Filament Sensor has been restarted")
 
