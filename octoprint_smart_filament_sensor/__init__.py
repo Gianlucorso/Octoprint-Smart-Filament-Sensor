@@ -21,7 +21,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
         self.code_sent = False
         self.count = 0 #ignored GPIO (raising or falling) edges
-        self.count_threshold = 2 #number of GPIO (raising or falling) edges to be ignored
+        self.count_threshold = 5 #number of GPIO (raising or falling) edges to be ignored
 
 #Properties
 
