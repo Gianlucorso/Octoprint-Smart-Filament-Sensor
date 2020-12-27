@@ -118,11 +118,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             if self.sensor_tmtrig_thread == None:
                 # Start Timeout_Detection thread
                 self._logger.debug("Initializing Time Trigger")
-                self.sensor_tmtrig_thread = TimeTrigger(
-                    1, "TimeTriggerThread", self.sensor_pin,
-                    self.sensor_timeout_threshold,
-                    self._logger,
-                    pCallback=self.printer_change_filament)
+                self.sensor_tmtrig_thread = TimeTrigger(1, "TimeTriggerThread", self.sensor_pin, self.sensor_timeout_threshold, self._logger, pCallback=self.printer_change_filament)
                 self._logger.debug("Starting Time Trigger")
                 self.sensor_tmtrig_thread.start()
                 self._logger.info("Smart Filament Sensor has been started")

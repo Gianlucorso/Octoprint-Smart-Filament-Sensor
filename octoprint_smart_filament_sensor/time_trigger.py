@@ -8,11 +8,13 @@ class TimeTrigger(THREADING.Thread):
     _running = False
     _started = False
     _start_time = 0
-    time_threshold = 0
+    _time_threshold = 0
 
     # Initialize FilamentMotionSensor
     def __init__(self, threadID, threadName, pPin, pTimeThreshold, pLogger, pCallback=None):
+        pLogger.debug("Time Trigger: initializing a new thread")
         THREADING.Thread.__init__(self)
+        pLogger.debug("Time Trigger: new thread is ready")
 
         self.id = threadID
         self.name = threadName
@@ -23,7 +25,7 @@ class TimeTrigger(THREADING.Thread):
         self._running = False
         self._started = False
         self._start_time = TIME.time()
-        self.time_threshold = pTimeThreshold
+        self._time_threshold = pTimeThreshold
 
         self._logger.debug("Time Trigger: init done")
 
@@ -39,14 +41,14 @@ class TimeTrigger(THREADING.Thread):
             if self._running:
                 elapsed_time = (TIME.time() - self._start_time)
 
-                if (elapsed_time > self.time_threshold):
+                if (elapsed_time > self._time_threshold):
                     self.fire(self)
 
             TIME.sleep(0.250)
         #GPIO.remove_event_detect(self.used_pin)
 
     def _set(self):
-        self._logger.debug("Time Trigger: running is " + str(self._running))
+        self._logger.debug("Time Trigger: running is " + str(self._runningz))
         if (not self._running):
             self._running = True
             GPIO.remove_event_detect(self._pin) #remove any previous event on the monitored pin
