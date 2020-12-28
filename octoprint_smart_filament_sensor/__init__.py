@@ -149,6 +149,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
             self._logger.info("Send PAUSE command: " + self.pause_command)
             self._printer.commands(self.pause_command)
             self.code_sent = True
+            self.printer_paused = True #printer will be "paused" (event PAUSE will NOT occur, so you must set this boolean to true)
 
 # Events
     def on_event(self, event, payload):
