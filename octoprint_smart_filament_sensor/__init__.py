@@ -22,6 +22,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         self.code_sent = False
         self.count = 0 #ignored GPIO (raising or falling) edges
         self.count_threshold = 5 #number of GPIO (raising or falling) edges to be ignored
+        self.printer_paused = False #becomes true whenever printer is paused (due to a filament change request)
 
 #Properties
 
@@ -127,6 +128,9 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
 
     def sensor_restart(self):
         if self.sensor_tmtrig_thread != None: #i.e. sensor_start has been already called
+            if self.printer_paused: #if sensor has to be restarted and printer has been paused, then internal time of the Time Trigger must be resetted as well
+                self.printer_paused = False
+                self.sensor_tmtrig_thread.reset_timer()
             self.sensor_tmtrig_thread.set() #re-sets the time trigger
             self.code_sent = False
             self._logger.info("Smart Filament Sensor has been restarted")
@@ -178,6 +182,7 @@ class SmartFilamentSensor(octoprint.plugin.StartupPlugin,
         elif event is Events.PRINT_PAUSED:
             self._logger.info("%s: Pausing Smart Filament Sensor" % (event))
             self.sensor_pause() #pausing
+            self.printer_paused = True
 
 # Plugin update methods
     def get_update_information(self):

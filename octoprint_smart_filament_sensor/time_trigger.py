@@ -55,7 +55,7 @@ class TimeTrigger(THREADING.Thread):
             GPIO.add_event_detect(self._pin, GPIO.BOTH, callback=self._reset_time)
             self._logger.debug("Time Trigger: set done")
 
-    def _reset_time(self, pPin): #resets internal time
+    def _reset_time(self, pPin): # (private) resets internal time
         self._start_time = TIME.time()
         self._logger.debug("Time Trigger: reset internal time at " + str(self._start_time))
 
@@ -69,6 +69,9 @@ class TimeTrigger(THREADING.Thread):
         self._running = False
         GPIO.remove_event_detect(self._pin) #can be removed
         self._logger.debug("Time Trigger: release done")
+
+    def reset_timer(self): # (public) resets internal time
+        self._reset_time(self._pin)
 
     def isRunning(self): #checks whether the time trigger is running
         return self._running
